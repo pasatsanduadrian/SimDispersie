@@ -1,0 +1,18 @@
+# .env ar trebui să nu fie niciodată urcat în repo!
+.env
+
+# Fisiere temporare sau cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.tmp
+
+# Fișiere generate de aplicație
+*.png
+/tmp/
+last_network.png
+last_overlay.png
+network_basemap.png
+plume.png
