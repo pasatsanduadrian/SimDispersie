@@ -46,6 +46,7 @@ Vizualizează dispersia poluanților pe hartă reală OSM, cu suprapunere color 
     ```python
     with open('.env', 'w') as f:
         f.write('NGROK_TOKEN=tokenul_tău_aici\n')
+        f.write("NGROK_HOSTNAME=stable-guided-buck.ngrok-free.app\n")
     ```
     sau direct:
     ```python
