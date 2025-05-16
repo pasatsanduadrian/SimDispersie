@@ -75,17 +75,22 @@ Vizualizează dispersia poluanților pe hartă reală OSM, cu suprapunere color 
 
 ---
 
-## ❗ Note și troubleshooting
-
-- Dacă basemap-ul apare **gri/monocrom**, asigură-te că ai conectivitate la internet (contextily descarcă tile-urile OSM).
-- Pentru acces din rețea/public, folosește ngrok și nu uita să pui tokenul în `.env`.
-- Pentru rulare pe server, folosește procese gen `gunicorn`/`waitress` și reverse proxy (avansat).
-
----
-
 ## ✨ Demo vizual
 
 ![Poza mea](https://drive.google.com/uc?export=view&id=14KNkkpfzyX6dGSO_J9BawYZldjVsAeTm)
 
 ---
 
+## ❗ Note și troubleshooting
+
+- Dacă basemap-ul apare **gri/monocrom**, asigură-te că ai conectivitate la internet (contextily descarcă tile-urile OSM).
+- Pentru acces din rețea/public, folosește ngrok și nu uita să pui tokenul în `.env`.
+- Pentru rulare pe server, folosește procese gen `gunicorn`/`waitress` și reverse proxy (avansat).
+
+### 🛠️ Notă utilă pentru depanare (Colab/ngrok)
+Dacă primești o eroare de tip **„port ocupat”** sau tunelul ngrok nu mai pornește corect (de exemplu după reporniri repetate în Google Colab):
+
+```python
+!fuser -k 5015/tcp
+from pyngrok import ngrok
+ngrok.kill()
