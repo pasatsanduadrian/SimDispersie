@@ -1,0 +1,8 @@
+flask
+osmnx
+contextily
+pyngrok
+tqdm
+python-dotenv
+matplotlib
+pandas
