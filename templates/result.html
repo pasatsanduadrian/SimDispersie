@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Rezultat simulare</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; margin:0; padding:0; }
+    .container { max-width: 960px; margin:40px auto 40px auto; background:#fff;border-radius:18px; box-shadow:0 2px 24px #00244422; padding: 36px 28px; }
+    h1, h2, h3 { color: #003366; }
+    .cards { display: flex; gap:32px; flex-wrap:wrap; margin-top:24px; }
+    .card { background:#f7faff; border-radius:14px; box-shadow:0 1px 8px #0050a111; padding:18px; flex:1 1 320px; min-width:280px; }
+    img { width:100%; max-width: 480px; border-radius:8px; border:1.5px solid #e0e0e0; box-shadow: 0 1px 6px #00447722;}
+    table { width:100%; margin-top: 14px;}
+    th, td { text-align:left; padding:6px 12px;}
+    th { background:#eaf4fc;}
+    tr:nth-child(even){background-color: #f2f9fe;}
+    .backlink { display:block; margin-top:18px; font-size:15px; color: #0366d6;}
+    @media (max-width:900px) { .cards{flex-direction:column; gap:18px;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛰️ Rezultat simulare dispersie</h1>
+    <div class="cards">
+      <div class="card">
+        <h2>Hartă rețea stradală cu basemap</h2>
+        <a href="/image/network" target="_blank" title="Deschide imagine completă">
+          <img src="data:image/png;base64,{{ network_b64 }}" alt="Basemap"/>
+        </a>
+      </div>
+      <div class="card">
+        <h2>Plume suprapus pe rețea stradală</h2>
+        <a href="/image/overlay" target="_blank" title="Deschide imagine completă">
+          <img src="data:image/png;base64,{{ overlay_b64 }}" alt="Overlay"/>
+        </a>
+      </div>
+    </div>
+    <div class="card" style="margin-top:32px;">
+      <h3>Metadate simulare</h3>
+      <table>
+        <tbody>
+          {% for k, v in metadata %}
+          <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <a class="backlink" href="/">⟵ Înapoi la simulare</a>
+    <a class="backlink" href="/map" target="_blank">⟶ Deschide hartă interactivă</a>
+  </div>
+</body>
+</html>

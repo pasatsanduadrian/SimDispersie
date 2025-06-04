@@ -1,6 +1,8 @@
 # Flask Dispersion Map Demo
 
 Vizualizează dispersia poluanților pe hartă reală OSM, cu suprapunere color și simulare meteorologică pentru 24h, totul direct din browser!
+Acest proiect este licențiat sub licența MIT. Vezi fișierul LICENSE pentru detalii.
+
 
 ---
 
@@ -63,6 +65,7 @@ Vizualizează dispersia poluanților pe hartă reală OSM, cu suprapunere color 
 ## 🔑 Variabile de mediu
 
 - `.env.example` este modelul de fișier
+- Variabila `PORT` permite schimbarea portului (implicit 5015).
 - Dacă nu folosești ngrok, aplicația rulează doar local.
 
 ---
@@ -71,6 +74,7 @@ Vizualizează dispersia poluanților pe hartă reală OSM, cu suprapunere color 
 
 - `app.py` – codul aplicației Flask, totul într-un singur fișier.
 - `.env.example` – model de configurare variabile de mediu.
+- Variabila `PORT` permite schimbarea portului (implicit 5015).
 - `.gitignore` – exclude .env și fișiere temporare.
 - `README.md` – acest fișier.
 
@@ -95,3 +99,11 @@ Dacă primești o eroare de tip **„port ocupat”** sau tunelul ngrok nu mai p
 !fuser -k 5015/tcp
 from pyngrok import ngrok
 ngrok.kill()
+```
+Aceasta va elibera portul si va inchide tunelul ngrok.
+
+## 🔬 Teste
+Rulati `pytest` pentru a executa testele unitare.
+
+## 🐳 Docker
+Rulati `docker build -t dispersie .` apoi `docker run -p 5015:5015 dispersie`.

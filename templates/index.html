@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulare dispersie poluanți — Vizualizare pe hartă</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; margin:0; padding:0; }
+    .container { max-width: 960px; margin:40px auto 40px auto; background:#fff;border-radius:18px; box-shadow:0 2px 24px #00244422; padding: 36px 28px; }
+    h1, h2, h3 { color: #003366; }
+    label { font-weight:bold; margin-top: 8px;}
+    input[type="text"] { padding:6px; border-radius:6px; border:1px solid #ddd;width:120px; margin-bottom: 12px;}
+    .btn { background: #0066cc; color: #fff; border:none; border-radius:6px; padding: 8px 20px; cursor:pointer; font-size:16px; }
+    .cards { display: flex; gap:32px; flex-wrap:wrap; margin-top:24px; }
+    .card { background:#f7faff; border-radius:14px; box-shadow:0 1px 8px #0050a111; padding:18px; flex:1 1 320px; min-width:280px; }
+    img { width:100%; max-width: 480px; border-radius:8px; border:1.5px solid #e0e0e0; box-shadow: 0 1px 6px #00447722;}
+    table { width:100%; margin-top: 14px;}
+    th, td { text-align:left; padding:6px 12px;}
+    th { background:#eaf4fc;}
+    tr:nth-child(even){background-color: #f2f9fe;}
+    .backlink { display:block; margin-top:18px; font-size:15px; color: #0366d6;}
+    @media (max-width:900px) { .cards{flex-direction:column; gap:18px;} }
+    .osm-note { margin:10px 0 18px 0; color:#333;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛰️ Simulare dispersie poluanți</h1>
+    <p>Generează rapid o simulare și vizualizează rezultatul pe hartă cu străzi și suprapunerea plumei de poluare.</p>
+    <div class="osm-note">
+      <b>Consultă harta:</b>
+      <a href="https://www.openstreetmap.org" target="_blank" style="color:#0366d6; text-decoration:underline;">Deschide OpenStreetMap</a>
+      <br/>Copiezi coordonatele în câmpurile de mai jos.
+    </div>
+    <form method="post" action="/simulate">
+      <label>Latitudine centru:</label><br>
+      <input type="text" name="latitude" value="44.4399"><br>
+      <label>Longitudine centru:</label><br>
+      <input type="text" name="longitude" value="26.0550"><br>
+      <label>Rază analiză (m):</label><br>
+      <input type="text" name="radius" value="2500"><br>
+      <label>Debit (flow rate, m³/s):</label><br>
+      <input type="text" name="flow_rate" value="5"><br>
+      <label>Înălțime sursă (H, m):</label><br>
+      <input type="text" name="H" value="25"><br>
+      <label>Temperatură gaze (°C):</label><br>
+      <input type="text" name="T_stack" value="150"><br><br>
+      <input class="btn" type="submit" value="Rulează simularea">
+    </form>
+  </div>
+</body>
+</html>

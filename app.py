@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, render_template_string, send_file
+from flask import Flask, request, render_template, send_file
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -22,6 +22,7 @@ app = Flask(__name__)
 
 # -------------- UTILITARE MODEL DISPERSIE -----------------
 def calc_sigmas(CATEGORY, x1):
+    """Calculate sigma_y and sigma_z for Pasquill stability CATEGORY."""
     x = np.abs(x1)
     a = np.zeros(np.shape(x))
     b = np.zeros(np.shape(x))
@@ -85,6 +86,7 @@ def calc_sigmas(CATEGORY, x1):
     return sig_y, sig_z
 
 def gauss_func(Q, u, dir1, x, y, z, xs, ys, H_eff, Dy, Dz, STABILITY):
+    """Gaussian plume concentration at receptors."""
     u1 = u
     x1 = x - xs
     y1 = y - ys
@@ -105,6 +107,7 @@ def gauss_func(Q, u, dir1, x, y, z, xs, ys, H_eff, Dy, Dz, STABILITY):
     return C
 
 def calculate_plume_rise(T_stack, T_ambient, wind_speed, flow_rate, stack_diameter=0.5):
+    """Estimate plume rise (m) based on stack and ambient conditions."""
     T_stack_K = T_stack + 273.15
     T_ambient_K = T_ambient + 273.15
     delta_T = T_stack_K - T_ambient_K
@@ -112,6 +115,7 @@ def calculate_plume_rise(T_stack, T_ambient, wind_speed, flow_rate, stack_diamet
     return delta_H
 
 def estimate_stability(row):
+    """Infer Pasquill stability class from weather row."""
     if row['WS'] > 4.5: return 6
     elif row['WS'] > 3.5: return 5
     elif row['RAD'] > 200 and row['TC'] > 20: return 4
@@ -122,6 +126,7 @@ def estimate_stability(row):
 
 # "YlGnBu", "BuGn", "viridis"
 def overlay_on_map(local_x, local_y, C1, image_data, extent_range, figsize=FIGSIZE, plume_cmap='BuGn'):
+    """Plot plume concentrations on top of network image."""
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111)
     local_extent = [-extent_range, extent_range, -extent_range, extent_range]
@@ -153,23 +158,15 @@ def overlay_on_map(local_x, local_y, C1, image_data, extent_range, figsize=FIGSI
     return fig, C1_max, min_val, max_val
 
 def run_dispersion_model_local(center_lon, center_lat, street_network_image,
-                              emission_source_x, emission_source_y, flow_rate, H, T_stack, crs_proj, extent_range, size_in_pixels):
+                              emission_source_x, emission_source_y, flow_rate,
+                              H, T_stack, crs_proj, extent_range, size_in_pixels):
+    """Simulate hourly dispersion using a sample CSV of meteorological data."""
     x_range = np.linspace(emission_source_x - extent_range, emission_source_x + extent_range, size_in_pixels)
     y_range = np.linspace(emission_source_y - extent_range, emission_source_y + extent_range, size_in_pixels)
     x, y = np.meshgrid(x_range, y_range)
     local_x = x - emission_source_x
     local_y = y - emission_source_y
-    # Exemplu date random ca la tine, adapteaza la datele tale reale
-    data = {
-        "Time": pd.date_range("2023-07-17 00:00", periods=24, freq='H'),
-        "RH": [65.68, 70, 72.73, 75.07, 69.47, 58.89, 51.1, 46.44, 41.02, 35.76, 33.26, 32.76, 32.17, 31.73, 32.69, 34.06, 35.27, 39.56, 45.95, 46.25, 52.12, 54.68, 57.32, 58.74],
-        "TC": [23.01, 21.97, 21.2, 21.03, 23.26, 26.52, 29.82, 32.33, 34.69, 37.16, 38.34, 38.45, 38.61, 38.16, 36.48, 35.81, 34.8, 32.25, 30.27, 30.84, 28.74, 27.62, 26.49, 25.79],
-        "WD": [70.91, 70.91, 70.9, 70.91, 70.83, 70.83, 50.1, 242.71, 137.74, 157.93, 80.85, 146.77, 175.06, 309.03, 8.67, 6.98, 223.43, 274.78, 280.65, 243.65, 219.07, 322.56, 316.16, 316.01],
-        "WS": [0.11, 0.11, 0.11, 0.11, 3.11, 0.12, 0.13, 0.19, 0.19, 0.24, 0.25, 0.27, 0.29, 0.16, 0.13, 0.12, 0.13, 0.13, 0.12, 0.17, 0.12, 0.12, 0.12, 0.12],
-        "S1": [17.06, 15.19, 34.14, 43.12, 30.21, 36.39, 41.02, 33.42, 29.36, 36.16, 128.46, 42.12, 50.53, 58.94, 44.62, 26.17, 90.71, 256.10, 144.29, 20.24, 62.01, 41.82, 26.24, 45.18],
-        "RAD": [150] * 24
-    }
-    df = pd.DataFrame(data)
+    df = pd.read_csv("data/sample_weather.csv", parse_dates=["Time"])
     df['Stability'] = df.apply(estimate_stability, axis=1)
     df['Q'] = df['S1'] / 1e6
     y_dim, x_dim = x.shape
@@ -194,6 +191,7 @@ def run_dispersion_model_local(center_lon, center_lat, street_network_image,
     return fig_overlay, min_conc, max_conc
 
 def generate_network_basemap(center_lat, center_lon, dist=2500, dxy=10, dpi=100, figsize=FIGSIZE):
+    """Return basemap image centered at given location."""
     import pyproj
     crs_3857 = "EPSG:3857"
     G = ox.graph_from_point((center_lat, center_lon), dist=dist, network_type='drive')
@@ -232,6 +230,7 @@ def generate_network_basemap(center_lat, center_lon, dist=2500, dxy=10, dpi=100,
 
 
 def generate_network_only(center_lat, center_lon, dist=2500, dxy=10, dpi=100, figsize=FIGSIZE):
+    """Return network image without basemap."""
     G = ox.graph_from_point((center_lat, center_lon), dist=dist, network_type='drive')
     node_id = ox.nearest_nodes(G, center_lon, center_lat)
     G_proj = ox.project_graph(G, to_crs="EPSG:3857")
@@ -252,67 +251,10 @@ def generate_network_only(center_lat, center_lon, dist=2500, dxy=10, dpi=100, fi
     plt.close(fig)
     return image_array, emission_source_x, emission_source_y, crs_proj, extent_range, size_in_pixels
 
-# ------------------- FLASK ROUTES -------------------
-form_template = """
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-  <meta charset="UTF-8">
-  <title>Simulare dispersie poluanți — Vizualizare pe hartă</title>
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fb; margin:0; padding:0; }
-    .container { max-width: 960px; margin:40px auto 40px auto; background:#fff; border-radius:18px; box-shadow:0 2px 24px #00244422; padding: 36px 28px; }
-    h1, h2, h3 { color: #003366; }
-    label { font-weight:bold; margin-top: 8px;}
-    input[type="text"] { padding:6px; border-radius:6px; border:1px solid #ddd; width:120px; margin-bottom: 12px;}
-    .btn { background: #0066cc; color: #fff; border:none; border-radius:6px; padding: 8px 20px; cursor:pointer; font-size:16px; }
-    .cards { display: flex; gap:32px; flex-wrap:wrap; margin-top:24px; }
-    .card { background:#f7faff; border-radius:14px; box-shadow:0 1px 8px #0050a111; padding:18px; flex:1 1 320px; min-width:280px; }
-    img { width:100%; max-width: 480px; border-radius:8px; border:1.5px solid #e0e0e0; box-shadow: 0 1px 6px #00447722;}
-    table { width:100%; margin-top: 14px;}
-    th, td { text-align:left; padding:6px 12px;}
-    th { background:#eaf4fc;}
-    tr:nth-child(even){background-color: #f2f9fe;}
-    .backlink { display:block; margin-top:18px; font-size:15px; color: #0366d6;}
-    @media (max-width:900px) { .cards{flex-direction:column; gap:18px;} }
-    .osm-note { margin:10px 0 18px 0; color:#333;}
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🛰️ Simulare dispersie poluanți</h1>
-    <p>Generează rapid o simulare și vizualizează rezultatul pe hartă cu străzi și suprapunerea plumei de poluare.</p>
-    <div class="osm-note">
-      <b>Consultă harta:</b>
-      <a href="https://www.openstreetmap.org/search?query=strada%20mosoaia%2037%2C%20bucuresti#map=19/44.379146/26.130614"
-         target="_blank" style="color:#0366d6; text-decoration:underline;">
-         Deschide OpenStreetMap (pentru identificare coordonate)
-      </a>
-      <br/>Copiezi coordonatele în câmpurile de mai jos.
-    </div>
-    <form method="post" action="/simulate">
-      <label>Latitudine centru:</label><br>
-      <input type="text" name="latitude" value="44.4399"><br>
-      <label>Longitudine centru:</label><br>
-      <input type="text" name="longitude" value="26.0550"><br>
-      <label>Rază analiză (m):</label><br>
-      <input type="text" name="radius" value="2500"><br>
-      <label>Debit (flow rate, m³/s):</label><br>
-      <input type="text" name="flow_rate" value="5"><br>
-      <label>Înălțime sursă (H, m):</label><br>
-      <input type="text" name="H" value="25"><br>
-      <label>Temperatură gaze (°C):</label><br>
-      <input type="text" name="T_stack" value="150"><br><br>
-      <input class="btn" type="submit" value="Rulează simularea">
-    </form>
-  </div>
-</body>
-</html>
-"""
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template_string(form_template)
+    return render_template('index.html')
 
 @app.route("/simulate", methods=["POST"])
 def simulate():
@@ -363,58 +305,31 @@ def simulate():
             ("Max conc", f"{max_conc:.2f} μg/m³"),
             ("Min conc (>0)", f"{min_conc:.2f} μg/m³")
         ]
-
-        html = f"""
-        <div class="container">
-          <h1>🛰️ Rezultat simulare dispersie</h1>
-          <div class="cards">
-            <div class="card">
-              <h2>Hartă rețea stradală cu basemap</h2>
-              <a href="/image/network" target="_blank" title="Deschide imagine completă">
-                <img src='data:image/png;base64,{network_b64}' alt="Basemap"/>
-              </a>
-            </div>
-            <div class="card">
-              <h2>Plume suprapus pe rețea stradală</h2>
-              <a href="/image/overlay" target="_blank" title="Deschide imagine completă">
-                <img src='data:image/png;base64,{overlay_b64}' alt="Overlay"/>
-              </a>
-            </div>
-          </div>
-          <div class="card" style="margin-top:32px;">
-            <h3>Metadate simulare</h3>
-            <table>
-              <tbody>
-                {''.join([f"<tr><th>{k}</th><td>{v}</td></tr>" for k, v in metadate])}
-              </tbody>
-            </table>
-          </div>
-          <a class="backlink" href='/'>⟵ Înapoi la simulare</a>
-        </div>
-        <style>
-            {form_template.split("<style>")[1].split("</style>")[0]}
-        </style>
-        """
         with open("/tmp/last_network.png", "wb") as f:
             f.write(network_bytes)
         with open("/tmp/last_overlay.png", "wb") as f:
             f.write(overlay_bytes)
-
-        return render_template_string(html)
+        import pyproj, folium
+        trans = pyproj.Transformer.from_crs(crs_proj, "EPSG:4326", always_xy=True)
+        lon_min, lat_min = trans.transform(emission_source_x - extent_range, emission_source_y - extent_range)
+        lon_max, lat_max = trans.transform(emission_source_x + extent_range, emission_source_y + extent_range)
+        m = folium.Map(location=[latitude, longitude], zoom_start=13)
+        folium.raster_layers.ImageOverlay(
+            overlay_path,
+            bounds=[[lat_min, lon_min], [lat_max, lon_max]],
+            opacity=0.6
+        ).add_to(m)
+        m.save("/tmp/interactive_map.html")
+        return render_template(
+            "result.html",
+            network_b64=network_b64,
+            overlay_b64=overlay_b64,
+            metadata=metadate
+        )
     except Exception as e:
-        html = f"""
-        <div class="container">
-            <h2 style="color:#a00;">Eroare la simulare</h2>
-            <div class="card" style="background:#ffebee;color:#a00;">
-              <b>{str(e)}</b>
-            </div>
-            <a class="backlink" href='/'>⟵ Înapoi la simulare</a>
-        </div>
-        <style>
-            {form_template.split("<style>")[1].split("</style>")[0]}
-        </style>
-        """
-        return render_template_string(html)
+        return render_template(
+            "result.html", network_b64="", overlay_b64="", metadata=[("Eroare", str(e))]
+        )
 
 @app.route("/image/network")
 def img_network():
@@ -424,8 +339,13 @@ def img_network():
 def img_overlay():
     return send_file("/tmp/last_overlay.png", mimetype="image/png")
 
-# --------------- Pornire Flask + ngrok -----------------
+@app.route("/map")
+def map_view():
+    return send_file("/tmp/interactive_map.html", mimetype="text/html")
+
 def run_with_ngrok(app, port=5015):
+    """Run Flask app exposing it via ngrok if token is set."""
+    port = int(os.getenv("PORT", port))
     ngrok_token = os.getenv("NGROK_TOKEN")
     ngrok_hostname = os.getenv("NGROK_HOSTNAME")
     if ngrok_token:
@@ -451,4 +371,4 @@ def run_with_ngrok(app, port=5015):
     thread.join()
 
 if __name__ == "__main__":
-    run_with_ngrok(app, port=5015)
+    run_with_ngrok(app, port=int(os.getenv("PORT", 5015)))
