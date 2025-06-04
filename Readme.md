@@ -22,7 +22,7 @@ Acest proiect este licențiat sub licența MIT. Vezi fișierul LICENSE pentru de
 
 2. Instalează dependențele:
     ```sh
-    pip install flask osmnx contextily pyngrok tqdm python-dotenv matplotlib pandas
+    pip install flask osmnx contextily pyngrok tqdm python-dotenv matplotlib numpy==1.24.4 pandas
     ```
 
 3. Configurează `.env`:
@@ -42,7 +42,7 @@ Acest proiect este licențiat sub licența MIT. Vezi fișierul LICENSE pentru de
 - Încarcă fișierul `app.py` într-un notebook Colab.
 - Instalează dependențele:
     ```python
-    !pip install flask osmnx contextily pyngrok tqdm python-dotenv matplotlib pandas
+    !pip install flask osmnx contextily pyngrok tqdm python-dotenv matplotlib numpy==1.24.4 pandas
     ```
 - (Opțional, dacă vrei acces public prin ngrok) Creează `.env` cu tokenul tău:
     ```python
@@ -91,6 +91,9 @@ Acest proiect este licențiat sub licența MIT. Vezi fișierul LICENSE pentru de
 - Dacă basemap-ul apare **gri/monocrom**, asigură-te că ai conectivitate la internet (contextily descarcă tile-urile OSM).
 - Pentru acces din rețea/public, folosește ngrok și nu uita să pui tokenul în `.env`.
 - Pentru rulare pe server, folosește procese gen `gunicorn`/`waitress` și reverse proxy (avansat).
+- Dacă întâmpini erori de tip *"numpy.dtype size changed"*, reinstalează
+  pachetele `numpy` și `pandas` cu versiunile din `requirements.txt` (de ex.
+  `pip install numpy==1.24.4 pandas==1.5.3`).
 
 ### 🛠️ Notă utilă pentru depanare (Colab/ngrok)
 Dacă primești o eroare de tip **„port ocupat”** sau tunelul ngrok nu mai pornește corect (de exemplu după reporniri repetate în Google Colab):
